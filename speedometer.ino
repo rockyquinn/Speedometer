@@ -1,12 +1,24 @@
 /*
-  Speedometer
-  To serve as a speedometer for any vehicle with round wheels, given a specific circumference.
+  Aruino TFT Screen
+  //description
   
   Screen Info:
     1) microSD slot, must be formatted as FAT16 or FAT32
     2) 1.77" screen, 160x128 pixel resolution
     3) Runs on +5 VDC (Voltage Direct Current)
     4) LED backlight.
+    
+  Pin setup:
+    +5V    ->  +5v
+    CS_SD  ->  4
+    RST    ->  8
+    DC     ->  9
+    CS_LD  ->  10
+    MOSI   ->  11
+    MISO   ->  12
+    SCK    ->  13
+    BL     ->  +5V
+    GND    ->  GND
   
   modified 2/3/2015
   by Rocky Quinn

@@ -1,6 +1,7 @@
 /*
-  Aruino TFT Screen
-  //description
+  Speedometer
+     To serve as a speedometer for any vehicle 
+     with round wheels, given a specific circumference.
   
   Screen Info:
     1) microSD slot, must be formatted as FAT16 or FAT32
@@ -20,7 +21,6 @@
     BL     ->  +5V
     GND    ->  GND
   
-  modified 2/3/2015
   by Rocky Quinn
 */
 
@@ -51,15 +51,12 @@ PImage imag;
 
 void setup()
 {
+  //Initializes the screen
   TFTScreen.begin();
   TFTScreen.background(255, 255, 255);
   
   Serial.begin(9600);
   while(!Serial){;}
-  
-  //Initializes the screen\\
-  
-  Serial.println("test print");
   
   //Initializes the microSD card so it can be accesed
   Serial.println("Initializing microSD card...");
@@ -69,9 +66,6 @@ void setup()
     return;
   }
   Serial.println("microSD card initialized.");
-  
-  TFTScreen.begin();
-  TFTScreen.background(255,255,255);
   
   //Loads the start up image.
   imag = TFTScreen.loadImage("start_up.bmp");
@@ -85,7 +79,6 @@ void setup()
 
 void loop()
 {
-  Serial.println("loop print");
   //Loads the screen with a 0 on the screen
   //imag = TFTScreen.loadImage("spd_0.bmp");
   if(!imag.isValid())
@@ -93,6 +86,22 @@ void loop()
     Serial.println("Error while loading image");
   }
   
+  PImage t1, t2;
+  
+  //Test 1
+  t1 = TFTScreen.loadImage("spd_0.bmp");
+  t2 = TFTScreen.loadImage("spd_0.bmp");
+  TFTScreen.image(t1,0,0);
+  TFTScreen.image(t2,80,0);
+  
+  delay(1000);
+  
+  //Test 2
+  t2 = TFTScreen.loadImage("spd_1.bmp");
+  TFTScreen.image(t2,80,0);
+  
+  delay(1000);
+  
   //To clear screen use .background or .begin()
-  TFTScreen.image(imag, /*x*/0, /*y*/0);
+  //TFTScreen.image(imag, /*x*/0, /*y*/0);
 }

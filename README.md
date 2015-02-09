@@ -1,5 +1,5 @@
 # Speedometer
-Arduino project using an Arduino Uno and a Arduino 1.8" TFT LCD Screen
+Arduino project using an Arduino Uno and a tft screen (Final project won't use a tft screen)
 
 This arduino project will serve as a speedometer for any vehicle with round wheels when given the tire's circumference.
 

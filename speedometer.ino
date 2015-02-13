@@ -4,104 +4,92 @@
      with round wheels, given a specific circumference.
   
   Screen Info:
-    1) microSD slot, must be formatted as FAT16 or FAT32
-    2) 1.77" screen, 160x128 pixel resolution
-    3) Runs on +5 VDC (Voltage Direct Current)
-    4) LED backlight.
+    1) Runs on +5 VDC (Voltage Direct Current)
     
   Pin setup:
-    +5V    ->  +5v
-    CS_SD  ->  4
-    RST    ->  8
-    DC     ->  9
-    CS_LD  ->  10
-    MOSI   ->  11
-    MISO   ->  12
-    SCK    ->  13
-    BL     ->  +5V
-    GND    ->  GND
+    +     =>  +5V   \
+    -     =>  GND    > Hall effect sensor
+    A0    =>  A0    /
+    
+    D0    =>  2     \ Seven segment display
+    GND   =>  GND   /     (first digit)
+    
+    D0    =>  3     \ Seven segment display
+    GND   =>  GND   /     (second digit)
   
   by Rocky Quinn
 */
+//HE_IN -> input from hall effect sensor
+#define HE_IN 0
 
-// SD.h  -  SD card Library
-// TFT.h -  TFT (Thin-Film-Transistor) Library
-// SPI.h -  SPI (Serial Peripheral Interface) Library
-#include <SD.h>
-#include <SPI.h>
-#include <TFT.h>
+// CIRCUMFERENCE is a constant that keeps track of the circumference of a tire
+float CIRCUMFERENCE;
+// previousInput is the last input received from the hall effect sensor
+int previousInput;
+// timer is used to time out one second at a time
+int timer;
+//rate is used to keep track of how many times the magnet has done a full revolution
+int rate;
 
-//SD_CS  -  SD Chip Select
-//LCD_CS -  LCD Chip select
-//DC     -  Direct Current
-//RESET  -  Reset button
-//MISO   -  Master In Slave Out
-//MOSI   -  Master Out Slave In
-//SCLK   -  Serial Clock
-//POWER  -  5V power pin
-#define CS_LCD 10
-#define CS_SD 4
-#define DC 9
-#define RESET 8
-#define MOSI 11
-#define MISO 12
-#define SCK 13
-TFT TFTScreen = TFT(CS_LCD, DC, RESET);
-PImage imag;
-
+/*
+  Setup is the start up code. Only runs once.
+*/
 void setup()
 {
-  //Initializes the screen
-  TFTScreen.begin();
-  TFTScreen.background(255, 255, 255);
-  
   Serial.begin(9600);
   while(!Serial){;}
   
-  //Initializes the microSD card so it can be accesed
-  Serial.println("Initializing microSD card...");
-  if(!SD.begin(CS_SD)) 
-  {
-    Serial.println("microSD card failed to initialize. Check connection.");
-    return;
-  }
-  Serial.println("microSD card initialized.");
-  
-  //Loads the start up image.
-  imag = TFTScreen.loadImage("start_up.bmp");
-  if(!imag.isValid())
-  {
-    Serial.println("Error while loading image");
-  }
-  TFTScreen.image(imag,0,0);
+  CIRCUMFERENCE = (3.1415926535 * 31 * (1/63360));
+  previousInput = 512;
+  timer = 0;
+  rate = 45;
 }
 
-
+/*
+  Loop is the code that's going to run over and over until:
+    - The arduino is turned off
+    - The arduino is reset
+    - The arduino crashes
+*/
 void loop()
 {
-  //Loads the screen with a 0 on the screen
-  //imag = TFTScreen.loadImage("spd_0.bmp");
-  if(!imag.isValid())
+  timer++;
+  measure_magnet();
+  if(timer == 10000)
+    calc_speed();
+}
+
+/*
+  measure_magnet uses the hall effect sensor to determine when a
+  magnet has rotated around the wheel once.
+  
+  local vars:
+    - raw = input from hall effect sensor
+*/
+void measure_magnet()
+{
+  int raw = analogRead(HE_IN);  //Range: 0 -> 1024
+  if( ( (raw-previousInput) < (-100)  ||  (raw-previousInput) > 100 ) &&
+         raw < 412  ||  raw > 612 )
   {
-    Serial.println("Error while loading image");
+    Serial.println("Rate increased.");
+    rate++;
   }
+  previousInput = raw;
+  //Serial.println("Raw reading: "+(String)raw);
+}
+
+/*
+  calc_speed gets called every second and uses rate and circumference to 
+  determine the speed of the wheel.
   
-  PImage t1, t2;
-  
-  //Test 1
-  t1 = TFTScreen.loadImage("spd_0.bmp");
-  t2 = TFTScreen.loadImage("spd_0.bmp");
-  TFTScreen.image(t1,0,0);
-  TFTScreen.image(t2,80,0);
-  
-  delay(1000);
-  
-  //Test 2
-  t2 = TFTScreen.loadImage("spd_1.bmp");
-  TFTScreen.image(t2,80,0);
-  
-  delay(1000);
-  
-  //To clear screen use .background or .begin()
-  //TFTScreen.image(imag, /*x*/0, /*y*/0);
+  local vars:
+    - spd = speed in miles per hour (mph)
+*/
+void calc_speed()
+{
+  //Serial.println("calc_speed() called");
+  int spd = (int)(rate * CIRCUMFERENCE * 3600);
+  Serial.println(spd);
+  timer = 0;
 }

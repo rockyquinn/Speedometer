@@ -20,8 +20,13 @@
   by Rocky Quinn
 */
 
-//HE_IN -> input from hall effect sensor
-#define HE_IN 0
+#define HE_IN 0    //Analog input from hall effect sensor
+#define DATA_1 5   //DS
+#define CLK_1 7    //SHCP
+#define LATCH_1 6  //STCP
+#define DATA_2 10  //DS
+#define CLK_2 12   //SHCP
+#define LATCH_2 11 //STCP
 
 // currentTime & newTime is used to time out the interval of a magnet passing
 unsigned long lastTime, newTime;
@@ -33,6 +38,18 @@ float CIRCUMFERENCE;
 int previousInput;
 // spd is used to keep track of the current speed
 int spd;
+byte display_numbers[11] = {
+  B11000000,// = 0
+  B11110110,// = 1
+  B10100001,// = 2
+  B10100100,// = 3
+  B10010110,// = 4
+  B10001100,// = 5
+  B10001000,// = 6
+  B11100110,// = 7
+  B10000000,// = 8
+  B10000110,// = 9
+  B10001001};//= E
 
 /*
   Setup is the start up code. Only runs once.
@@ -41,6 +58,17 @@ void setup()
 {
   Serial.begin(9600);
   while(!Serial){;}
+  
+  pinMode(CLK_1, OUTPUT);
+  pinMode(DATA_1,  OUTPUT);
+  pinMode(LATCH_1, OUTPUT);
+  pinMode(CLK_2, OUTPUT);
+  pinMode(DATA_2,  OUTPUT);
+  pinMode(LATCH_2, OUTPUT);
+  shiftOut(DATA_1, CLK_1, LSBFIRST, display_numbers[10]);
+  shiftOut(DATA_2, CLK_2, LSBFIRST, display_numbers[10]);
+  digitalWrite(LATCH_1, 1);
+  digitalWrite(LATCH_2, 1);
   
   DIAMETER = 31;
   CIRCUMFERENCE = (3.1415926535 * DIAMETER / 63360);
@@ -129,4 +157,11 @@ void update_display(int val)
   //Display E1 for calc_speed errors  (val==101)
   int d1 = val/10;
   int d2 = val%10;
+  
+  digitalWrite(LATCH_1, 0);
+  digitalWrite(LATCH_2, 0);
+  shiftOut(DATA_1, CLK_1, LSBFIRST, display_numbers[0]);
+  shiftOut(DATA_2, CLK_2, LSBFIRST, display_numbers[0]);
+  digitalWrite(LATCH_1, 1);
+  digitalWrite(LATCH_2, 1);
 }

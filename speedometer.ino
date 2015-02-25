@@ -11,11 +11,13 @@
     -     =>  GND    > Hall effect sensor
     A0    =>  A0    /
     
-    D0    =>  2     \ Seven segment display
-    GND   =>  GND   /     (first digit)
+    DS    =>  D5     \ Seven segment display
+    STCP  =>  D6      >    (first digit)
+    SHCP  =>  D7     /
     
-    D0    =>  3     \ Seven segment display
-    GND   =>  GND   /     (second digit)
+    DS    =>  D10    \ Seven segment display
+    STCP  =>  D11     >    (first digit)
+    SHCP  =>  D12    /
   
   by Rocky Quinn
 */

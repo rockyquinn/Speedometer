@@ -33,9 +33,9 @@
 // currentTime & newTime is used to time out the interval of a magnet passing
 unsigned long lastTime, newTime;
 // DIAMETER is the diameter of the tire
-float DIAMETER;
+double DIAMETER;
 // CIRCUMFERENCE is a constant that keeps track of the circumference of a tire
-float CIRCUMFERENCE;
+double CIRCUMFERENCE;
 // previousInput is the last input received from the hall effect sensor
 int previousInput;
 // spd is used to keep track of the current speed
@@ -72,22 +72,16 @@ void setup()
   digitalWrite(LATCH_1, 1);
   digitalWrite(LATCH_2, 1);
   
-  DIAMETER = 31;
-  CIRCUMFERENCE = (3.1415926535 * DIAMETER / 63360);
+  DIAMETER = 20;
+  CIRCUMFERENCE = (3.1415926535 * DIAMETER); 
   previousInput = 512;
   spd = 00;
   lastTime = millis();
   newTime = lastTime;
-  
-  Serial.println("testing variables...");
-  Serial.print("Circumference = ");Serial.println(CIRCUMFERENCE);
-  Serial.print("lastTime = ");Serial.println(lastTime);
-  Serial.print("newTime = ");Serial.println(newTime);
-  Serial.println("Testing complete!\n");
 }
 
 /*
-  Loop is the code that's going to run over and over until:
+  loop is the code that's going to run over and over until:
     - The arduino is turned off
     - The arduino is reset
     - The arduino crashes
@@ -95,25 +89,22 @@ void setup()
 void loop()
 {
   measure_magnet();
+  if(millis()-lastTime > 2200)
+  {
+    spd=0;
+  }
   update_display(spd);
 }
 
-/*
-  measure_magnet uses the hall effect sensor to determine when a
-  magnet has rotated around the wheel once.
-  
-  local vars:
-    - raw = input from hall effect sensor
-*/
 void measure_magnet()
 {
   int raw = analogRead(HE_IN);  //Range: 0 -> 1024
   if( ( (raw-previousInput) < (-100)  ||  (raw-previousInput) > 100 ) &&
          raw < 412  ||  raw > 612 )
   {
-    Serial.println(" increased.");
     newTime = millis();
     calc_speed();
+    lastTime = newTime;
   }
   previousInput = raw;
 }
@@ -125,19 +116,7 @@ void measure_magnet()
 */
 void calc_speed()
 {
-  if(newTime != lastTime)
-  {
-    Serial.println("Testing calc_speed()...");
-    Serial.print("spd = ");Serial.println( (CIRCUMFERENCE/( (newTime-lastTime)*3600000 )) );
-    spd = ( (int)(CIRCUMFERENCE/( (newTime-lastTime)*3600000 )) );
-    Serial.print("spd = ");Serial.println(spd);
-    Serial.println("Testing complete!\n");
-  
-    if(spd > 99)
-      spd = 99;
-    else if(spd < 0)
-      spd = 101;
-  }
+  spd = ( (int)( CIRCUMFERENCE/( (newTime-lastTime) * .0176 ) ) );
   return;
 }
 
@@ -154,16 +133,15 @@ void calc_speed()
 */
 void update_display(int val)
 {
-  //Display 00-99 for speeds
-  //Display EE for time error         (val==100)
-  //Display E1 for calc_speed errors  (val==101)
+  //Display 00-99 for speeds 
   int d1 = val/10;
   int d2 = val%10;
   
   digitalWrite(LATCH_1, 0);
   digitalWrite(LATCH_2, 0);
-  shiftOut(DATA_1, CLK_1, LSBFIRST, display_numbers[0]);
-  shiftOut(DATA_2, CLK_2, LSBFIRST, display_numbers[0]);
+  shiftOut(DATA_1, CLK_1, LSBFIRST, display_numbers[d1]);
+  shiftOut(DATA_2, CLK_2, LSBFIRST, display_numbers[d2]);
   digitalWrite(LATCH_1, 1);
   digitalWrite(LATCH_2, 1);
+  return;
 }

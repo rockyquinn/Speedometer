@@ -16,7 +16,7 @@
     SHCP  =>  D7     /
     
     DS    =>  D10    \ Seven segment display
-    STCP  =>  D11     >    (first digit)
+    STCP  =>  D11     >    (second digit)
     SHCP  =>  D12    /
   
   by Rocky Quinn
